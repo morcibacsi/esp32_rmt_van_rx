@@ -1,0 +1,8 @@
+build/
+.vscode/BROWSE.*
+.vs/
+release/
+__vm/
+*.vcxproj.filters
+*.sln
+*.vcxproj
