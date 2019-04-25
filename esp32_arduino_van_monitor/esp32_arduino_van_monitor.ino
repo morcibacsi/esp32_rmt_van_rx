@@ -7,8 +7,8 @@
  * software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied.
 */
-#include <Arduino.h>
 #include <esp32_arduino_rmt_van_rx.h>
+#include <esp32_rmt_van_rx.h>
 
 ESP32_RMT_VAN_RX VAN_RX;
 
@@ -21,7 +21,7 @@ uint8_t vanMessage[34];
 
 void setup()
 {
-    Serial.begin(112500);
+    Serial.begin(115200);
     printf("ESP32 Arduino VAN bus monitor\n");
 
     VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN);
