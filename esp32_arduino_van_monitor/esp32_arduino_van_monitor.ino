@@ -13,7 +13,7 @@
 ESP32_RMT_VAN_RX VAN_RX;
 
 const uint8_t VAN_DATA_RX_RMT_CHANNEL = 0;
-const uint8_t VAN_DATA_RX_PIN = 22;
+const uint8_t VAN_DATA_RX_PIN = 4;
 const uint8_t VAN_DATA_RX_LED_INDICATOR_PIN = 2;
 
 uint8_t vanMessageLength;
