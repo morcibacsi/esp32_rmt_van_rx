@@ -19,9 +19,11 @@ const uint8_t VAN_DATA_RX_LED_INDICATOR_PIN = 2;
 uint8_t vanMessageLength;
 uint8_t vanMessage[34];
 
+uint32_t lastMillis = 0;
+
 void setup()
 {
-    Serial.begin(115200);
+    Serial.begin(500000);
     printf("ESP32 Arduino VAN bus monitor\n");
 
     VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN);
@@ -29,26 +31,32 @@ void setup()
 
 void loop()
 {
-    static uint32_t lastMillis = 0;
-
     if (millis() - lastMillis > 10)
     {
+        lastMillis = millis();
         VAN_RX.Receive(&vanMessageLength, vanMessage);
 
         if (vanMessageLength > 0)
         {
-            for (size_t i = 0; i < vanMessageLength; i++)
+            if(VAN_RX.IsCrcOk(vanMessage, vanMessageLength))
             {
-                if (i != vanMessageLength - 1)
+                for (size_t i = 0; i < vanMessageLength; i++)
                 {
-                    printf("%02X ", vanMessage[i]);
+                    if (i != vanMessageLength - 1)
+                    {
+                        printf("%02X ", vanMessage[i]);
+                    }
+                    else
+                    {
+                        printf("%02X", vanMessage[i]);
+                    }
                 }
-                else
-                {
-                    printf("%02X", vanMessage[i]);
-                }
+                printf("\n");
             }
-            printf("\n");
+            else
+            {
+                printf("CRC ERROR!\n");
+            }
         }
     }
 }

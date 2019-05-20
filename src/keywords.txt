@@ -15,6 +15,7 @@ ESP32_RMT_VAN_RX	KEYWORD1
 Init	KEYWORD2
 Receive	KEYWORD2
 Stop	KEYWORD2
+IsCrcOk	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
