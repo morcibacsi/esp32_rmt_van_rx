@@ -1,3 +1,4 @@
+#include <string.h>
 #include "esp32_rmt_van_rx.h"
 
 volatile uint8_t _rmt_van_rx_ledPin;
@@ -73,7 +74,7 @@ bool rmt_van_rx_parse_byte(uint8_t level, uint32_t duration, uint8_t *bitCounter
     return result;
 }
 
-// RMT receiver task
+/* RMT receiver function */
 void rmt_van_rx_receive(uint8_t *vanMessageLength, uint8_t vanMessage[]) 
 {
     *vanMessageLength = 0;
@@ -81,13 +82,13 @@ void rmt_van_rx_receive(uint8_t *vanMessageLength, uint8_t vanMessage[])
     size_t i;
     size_t rx_size = 0;
     rmt_item32_t* items = NULL;
-    
+
     // define ringbuffer handle
     RingbufHandle_t rb;
-    
+
     // get the ring buffer handle
     rmt_get_ringbuf_handle(_rmt_van_rx_channel, &rb);
-    
+
     // get items, if there are any
     items = (rmt_item32_t*) xRingbufferReceive(rb, &rx_size, 8);
     if (items)
@@ -122,19 +123,105 @@ void rmt_van_rx_receive(uint8_t *vanMessageLength, uint8_t vanMessage[])
 
         // turn off visible led
         gpio_set_level(_rmt_van_rx_ledPin, 0);
-        
+
         // free up data space
         vRingbufferReturnItem(rb, (void*) items);
     }
 }
 
-// Initialize RMT receive channel
+/* 
+    Calculates the CRC-15 of the input data to according to the VAN ISO/11519–3 standard 
+    Borrowed from here: http://graham.auld.me.uk/projects/vanbus/crc15.html
+*/
+int rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
+{
+    // computes crc value
+    uint8_t i = 0;
+    uint8_t j = 0;
+    uint8_t k = 0;
+    uint8_t bit = 0;
+
+    const uint8_t order = 15;
+    uint8_t polynom[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x9D }; //0xF9D;
+    uint8_t xor[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF };     //0x7FFF;
+    uint8_t mask[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF };    //0x7FFF;
+
+    int crc[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0x00 };
+
+    // main loop, algorithm is fast bit by bit type
+    for (i = 0; i < lengthOfData; i++)
+    {
+        uint8_t currentByte = data[i];
+
+        // rotate one data byte including crcmask
+        for (j = 0; j < 8; j++)
+        {
+            bit = 0;
+            if ((crc[7 - ((order - 1) >> 3)] & (1 << ((order - 1) & 7)))>0)
+            {
+                bit = 1;
+            }
+            if ((currentByte & 0x80) > 0)
+            {
+                bit ^= 1;
+            }
+            currentByte <<= 1;
+            for (k = 0; k < 8; k++)     // rotate all (max.8) crc bytes
+            {
+                crc[k] = ((crc[k] << 1) | (crc[k + 1] >> 7)) & mask[k];
+                if (bit > 0)
+                {
+                    crc[k] ^= polynom[k];
+                }
+            }
+        }
+    }
+
+    int finalCrc = 0;
+
+    // perform xor value
+    for (i = 0; i < 8; i++)
+    {
+        crc[i] ^= xor[i];
+        if (crc[i] != 0)
+        {
+            if (finalCrc == 0)
+            {
+                finalCrc |= crc[i];
+            }
+            else
+            {
+                finalCrc = crc[i] | finalCrc << 8;
+            }
+        }
+    }
+
+    // multiply result by 2 to turn 15 bit result into 16 bit representation
+    return finalCrc << 1;
+}
+
+/* Returns true if the supplied VAN message has a good CRC value at the last two bytes */
+bool rmt_van_rx_is_crc_ok(uint8_t vanMessage[], uint8_t vanMessageLength)
+{
+    uint8_t crcByte1 = vanMessage[vanMessageLength - 2];
+    uint8_t crcByte2 = vanMessage[vanMessageLength - 1];
+    uint16_t crcValueInMessage = crcByte1 << 8 | crcByte2;
+
+    uint8_t vanMessageWithIdWithoutCrc[32];
+    memcpy(vanMessageWithIdWithoutCrc, vanMessage + 1, vanMessageLength - 3);
+
+    int calculatedCrc = rmt_van_rx_crc15(vanMessageWithIdWithoutCrc, vanMessageLength - 3);
+
+    return crcValueInMessage == calculatedCrc;
+}
+
+/* Initialize RMT receive channel */
 void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin)
 {
     _rmt_van_rx_ledPin = ledPin;
     _rmt_van_rx_channel = channel;
     _rmt_van_rx_rxPin = rxPin;
-    
+
     rmt_van_rx_led_init(_rmt_van_rx_ledPin);
 
     rmt_config_t rmt_rx;
@@ -144,11 +231,11 @@ void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin)
     rmt_rx.clk_div       = 80; // 1 MHz, 1 us - we  take samples every 1 microseconds so in our receive task we are going to have multiple of 8 us durations (8us is the so called 'time slice' on a 125kbs VAN bus)
     rmt_rx.mem_block_num = 2;
     rmt_rx.rmt_mode      = RMT_MODE_RX;
-    
+
     rmt_rx.rx_config.filter_en           = false;
     rmt_rx.rx_config.filter_ticks_thresh = 0;
     rmt_rx.rx_config.idle_threshold      = 80; // we consider the packet whole after 80 ticks of unchanged line state
-    
+
     rmt_config(&rmt_rx);
     rmt_driver_install(rmt_rx.channel, 1000, 0);
 

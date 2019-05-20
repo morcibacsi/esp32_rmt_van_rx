@@ -31,5 +31,6 @@ public:
     void Receive(uint8_t *messageLength, uint8_t message[]);
     void Init(uint8_t channel, uint8_t rxPin, uint8_t ledPin);
     void Stop(uint8_t channel);
+    bool IsCrcOk(uint8_t vanMessage[], uint8_t vanMessageLength);
 };
 #endif

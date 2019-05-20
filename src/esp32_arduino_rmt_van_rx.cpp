@@ -35,3 +35,8 @@ void ESP32_RMT_VAN_RX::Stop(uint8_t channel)
 {
     rmt_van_rx_channel_stop(channel);
 }
+
+bool ESP32_RMT_VAN_RX::IsCrcOk(uint8_t vanMessage[], uint8_t vanMessageLength)
+{
+    return rmt_van_rx_is_crc_ok(vanMessage, vanMessageLength);
+}

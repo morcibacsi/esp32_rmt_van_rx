@@ -16,7 +16,7 @@
 #include "esp32_rmt_van_rx.h"
 
 const uint8_t VAN_DATA_RX_RMT_CHANNEL = 0;
-const uint8_t VAN_DATA_RX_PIN = 22;
+const uint8_t VAN_DATA_RX_PIN = 4;
 const uint8_t VAN_DATA_RX_LED_INDICATOR_PIN = 2;
 
 void rmt_van_rx_receive_task(void *pvParameter)
@@ -26,21 +26,28 @@ void rmt_van_rx_receive_task(void *pvParameter)
     for(;;)
     {
         rmt_van_rx_receive(&vanMessageLength, vanMessage);
-        
+
         if (vanMessageLength > 0)
         {
-            for(size_t i = 0; i < vanMessageLength; i++)
+            if(rmt_van_rx_is_crc_ok(vanMessage, vanMessageLength))
             {
-                if ( i != vanMessageLength-1)
+                for(size_t i = 0; i < vanMessageLength; i++)
                 {
-                    printf("%02X ", vanMessage[i]);
+                    if ( i != vanMessageLength-1)
+                    {
+                        printf("%02X ", vanMessage[i]);
+                    }
+                    else
+                    {
+                        printf("%02X", vanMessage[i]);
+                    }
                 }
-                else
-                {
-                    printf("%02X", vanMessage[i]);
-                }
-            }            
-            printf("\n");
+                printf("\n");
+            }
+            else
+            {
+                printf("CRC ERROR!\n");
+            }
         }
 
         // delay 10 milliseconds. No need to overheat the processor
@@ -49,7 +56,7 @@ void rmt_van_rx_receive_task(void *pvParameter)
 }
 
 void app_main() {
-    // initialize hardware    
+    // initialize hardware
     rmt_van_rx_channel_init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN);
 
     // start receive task
