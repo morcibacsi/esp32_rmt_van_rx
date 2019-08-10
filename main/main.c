@@ -57,7 +57,7 @@ void rmt_van_rx_receive_task(void *pvParameter)
 
 void app_main() {
     // initialize hardware
-    rmt_van_rx_channel_init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN);
+    rmt_van_rx_channel_init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, RX_VAN_LINE_LEVEL_HIGH);
 
     // start receive task
     xTaskCreate(rmt_van_rx_receive_task, "rmt_van_rx_receive_task", 1024*2, NULL, 10, NULL);

@@ -4,6 +4,7 @@
 volatile uint8_t _rmt_van_rx_ledPin;
 volatile uint8_t _rmt_van_rx_rxPin;
 volatile uint8_t _rmt_van_rx_channel;
+volatile RX_VAN_LINE_LEVEL _rmt_van_rx_van_line_level;
 
 /* Initialize LED */
 void rmt_van_rx_led_init(uint8_t ledPin)
@@ -40,6 +41,10 @@ uint8_t round_to_nearest(uint8_t numToRound, uint8_t multiple)
 bool rmt_van_rx_parse_byte(uint8_t level, uint32_t duration, uint8_t *bitCounter, uint8_t *tempByte, uint8_t *mask, uint8_t *finalByte)
 {
     bool result = false;
+    if (_rmt_van_rx_van_line_level == RX_VAN_LINE_LEVEL_LOW)
+    {
+        level = !level;
+    }
 
     // on the bus the time slices are a little off from the multiple of 8 microseconds, so we round it to the nearest multiple of 8 before dividing
     uint8_t countOfTimeSlices = round_to_nearest(duration, 8) / 8;
@@ -216,11 +221,12 @@ bool rmt_van_rx_is_crc_ok(uint8_t vanMessage[], uint8_t vanMessageLength)
 }
 
 /* Initialize RMT receive channel */
-void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin)
+void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, RX_VAN_LINE_LEVEL vanLineLevel)
 {
     _rmt_van_rx_ledPin = ledPin;
     _rmt_van_rx_channel = channel;
     _rmt_van_rx_rxPin = rxPin;
+    _rmt_van_rx_van_line_level = vanLineLevel;
 
     rmt_van_rx_led_init(_rmt_van_rx_ledPin);
 
