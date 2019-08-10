@@ -26,7 +26,7 @@ void setup()
     Serial.begin(500000);
     printf("ESP32 Arduino VAN bus monitor\n");
 
-    VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN);
+    VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, VAN_LINE_LEVEL_HIGH);
 }
 
 void loop()
