@@ -1,8 +1,12 @@
+
 # ESP32 RMT peripheral Vehicle Area Network (VAN bus) reader
 
 Arduino friendly [VAN bus][van_network] reader library utilizing ESP32 RMT peripheral.
 
 VAN bus is pretty similar to CAN bus. It was used in many cars (Peugeot, Citroen) made by PSA.
+
+### ESP8266 support
+This library is built around the [RMT (Remote control) peripheral][rmt_peripheral] of the ESP32. Therefore **ESP8266 is NOT supported** by this library as it does not have the peripheral built in.
 
 ### Schematics
 
@@ -30,4 +34,4 @@ Check my [VAN Analyzer for Saleae Logic Analyzer][van_analyzer] also
 
 [van_network]: https://en.wikipedia.org/wiki/Vehicle_Area_Network
 [van_analyzer]: https://github.com/morcibacsi/VanAnalyzer/
-
+[rmt_peripheral]: https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html
