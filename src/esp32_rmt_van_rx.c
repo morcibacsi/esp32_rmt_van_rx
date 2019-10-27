@@ -4,6 +4,7 @@
 volatile uint8_t _rmt_van_rx_ledPin;
 volatile uint8_t _rmt_van_rx_rxPin;
 volatile uint8_t _rmt_van_rx_channel;
+volatile uint8_t _rmt_van_rx_time_slice_divisor;
 volatile RX_VAN_LINE_LEVEL _rmt_van_rx_van_line_level;
 
 /* Initialize LED */
@@ -46,8 +47,8 @@ bool rmt_van_rx_parse_byte(uint8_t level, uint32_t duration, uint8_t *bitCounter
         level = !level;
     }
 
-    // on the bus the time slices are a little off from the multiple of 8 microseconds, so we round it to the nearest multiple of 8 before dividing
-    uint8_t countOfTimeSlices = round_to_nearest(duration, 8) / 8;
+    // on the bus the time slices are a little off from the multiple of the TS microseconds, so we round it to the nearest multiple of the TS before dividing
+    uint8_t countOfTimeSlices = round_to_nearest(duration, _rmt_van_rx_time_slice_divisor) / _rmt_van_rx_time_slice_divisor;
 
     for (int i = 0; i < countOfTimeSlices; i++)
     {
@@ -222,7 +223,7 @@ bool rmt_van_rx_is_crc_ok(uint8_t vanMessage[], uint8_t vanMessageLength)
 }
 
 /* Initialize RMT receive channel */
-void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, RX_VAN_LINE_LEVEL vanLineLevel)
+void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, RX_VAN_LINE_LEVEL vanLineLevel, RX_VAN_NETWORK_TYPE vanNetworkType)
 {
     _rmt_van_rx_ledPin = ledPin;
     _rmt_van_rx_channel = channel;
@@ -233,6 +234,17 @@ void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, RX_
 
     rmt_config_t rmt_rx;
 
+    if(vanNetworkType == RX_VAN_NETWORK_COMFORT)
+    {
+       _rmt_van_rx_time_slice_divisor = 8;
+       rmt_rx.rx_config.idle_threshold = 80; // we consider the packet whole after this number of ticks of unchanged line state
+    }
+    else if(vanNetworkType == RX_VAN_NETWORK_BODY)
+    {
+       _rmt_van_rx_time_slice_divisor = 16;
+       rmt_rx.rx_config.idle_threshold = 160; // we consider the packet whole after this number of ticks of unchanged line state
+    }
+
     rmt_rx.channel       = channel;
     rmt_rx.gpio_num      = rxPin;
     rmt_rx.clk_div       = 80; // 1 MHz, 1 us - we  take samples every 1 microseconds so in our receive task we are going to have multiple of 8 us durations (8us is the so called 'time slice' on a 125kbs VAN bus)
@@ -241,7 +253,6 @@ void rmt_van_rx_channel_init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, RX_
 
     rmt_rx.rx_config.filter_en           = false;
     rmt_rx.rx_config.filter_ticks_thresh = 0;
-    rmt_rx.rx_config.idle_threshold      = 80; // we consider the packet whole after 80 ticks of unchanged line state
 
     rmt_config(&rmt_rx);
     rmt_driver_install(rmt_rx.channel, 1000, 0);

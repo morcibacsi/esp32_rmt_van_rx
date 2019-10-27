@@ -21,3 +21,4 @@ IsCrcOk	KEYWORD2
 # Constants (LITERAL1)
 #######################################
 VAN_LINE_LEVEL	LITERAL1
+VAN_NETWORK_TYPE	LITERAL1

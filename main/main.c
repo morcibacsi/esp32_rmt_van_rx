@@ -16,7 +16,7 @@
 #include "esp32_rmt_van_rx.h"
 
 const uint8_t VAN_DATA_RX_RMT_CHANNEL = 0;
-const uint8_t VAN_DATA_RX_PIN = 4;
+const uint8_t VAN_DATA_RX_PIN = 21;
 const uint8_t VAN_DATA_RX_LED_INDICATOR_PIN = 2;
 
 void rmt_van_rx_receive_task(void *pvParameter)
@@ -51,13 +51,14 @@ void rmt_van_rx_receive_task(void *pvParameter)
         }
 
         // delay 10 milliseconds. No need to overheat the processor
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(5 / portTICK_PERIOD_MS);
     }
 }
 
 void app_main() {
     // initialize hardware
-    rmt_van_rx_channel_init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, RX_VAN_LINE_LEVEL_HIGH);
+    rmt_van_rx_channel_init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, RX_VAN_LINE_LEVEL_HIGH, RX_VAN_NETWORK_COMFORT);
+    //rmt_van_rx_channel_init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, RX_VAN_LINE_LEVEL_HIGH, RX_VAN_NETWORK_BODY);
 
     // start receive task
     xTaskCreate(rmt_van_rx_receive_task, "rmt_van_rx_receive_task", 1024*2, NULL, 10, NULL);
