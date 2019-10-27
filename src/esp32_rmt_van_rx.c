@@ -138,7 +138,7 @@ void rmt_van_rx_receive(uint8_t *vanMessageLength, uint8_t vanMessage[])
     Calculates the CRC-15 of the input data to according to the VAN ISO/11519–3 standard 
     Borrowed from here: http://graham.auld.me.uk/projects/vanbus/crc15.html
 */
-int rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
+uint16_t rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
 {
     // computes crc value
     uint8_t i = 0;
@@ -151,7 +151,7 @@ int rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
     uint8_t xor[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF };     //0x7FFF;
     uint8_t mask[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF };    //0x7FFF;
 
-    int crc[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0x00 };
+    uint16_t crc[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0x00 };
 
     // main loop, algorithm is fast bit by bit type
     for (i = 0; i < lengthOfData; i++)
@@ -182,7 +182,7 @@ int rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
         }
     }
 
-    int finalCrc = 0;
+    uint16_t finalCrc = 0;
 
     // perform xor value
     for (i = 0; i < 8; i++)
@@ -215,7 +215,7 @@ bool rmt_van_rx_is_crc_ok(uint8_t vanMessage[], uint8_t vanMessageLength)
     uint8_t vanMessageWithIdWithoutCrc[32];
     memcpy(vanMessageWithIdWithoutCrc, vanMessage + 1, vanMessageLength - 3);
 
-    int calculatedCrc = rmt_van_rx_crc15(vanMessageWithIdWithoutCrc, vanMessageLength - 3);
+    uint16_t calculatedCrc = rmt_van_rx_crc15(vanMessageWithIdWithoutCrc, vanMessageLength - 3);
 
     return crcValueInMessage == calculatedCrc;
 }
