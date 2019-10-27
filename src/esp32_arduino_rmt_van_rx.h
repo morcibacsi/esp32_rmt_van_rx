@@ -17,6 +17,11 @@
             VAN_LINE_LEVEL_LOW   = 0,
             VAN_LINE_LEVEL_HIGH  = 1,
         } VAN_LINE_LEVEL;
+
+        typedef enum {
+            VAN_NETWORK_TYPE_BODY     = 0,
+            VAN_NETWORK_TYPE_COMFORT  = 1,
+        } VAN_NETWORK_TYPE;
     #ifdef __cplusplus
     }
     #endif
@@ -33,7 +38,7 @@ public:
     ~ESP32_RMT_VAN_RX();
 
     void Receive(uint8_t *messageLength, uint8_t message[]);
-    void Init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, VAN_LINE_LEVEL vanLineLevel);
+    void Init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, VAN_LINE_LEVEL vanLineLevel, VAN_NETWORK_TYPE vanNetworkType);
     void Stop(uint8_t channel);
     bool IsCrcOk(uint8_t vanMessage[], uint8_t vanMessageLength);
 };

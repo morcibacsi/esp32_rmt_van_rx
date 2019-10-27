@@ -13,7 +13,7 @@
 ESP32_RMT_VAN_RX VAN_RX;
 
 const uint8_t VAN_DATA_RX_RMT_CHANNEL = 0;
-const uint8_t VAN_DATA_RX_PIN = 4;
+const uint8_t VAN_DATA_RX_PIN = 21;
 const uint8_t VAN_DATA_RX_LED_INDICATOR_PIN = 2;
 
 uint8_t vanMessageLength;
@@ -26,12 +26,13 @@ void setup()
     Serial.begin(500000);
     printf("ESP32 Arduino VAN bus monitor\n");
 
-    VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, VAN_LINE_LEVEL_HIGH);
+    VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, VAN_LINE_LEVEL_HIGH, VAN_NETWORK_TYPE_COMFORT);
+    //VAN_RX.Init(VAN_DATA_RX_RMT_CHANNEL, VAN_DATA_RX_PIN, VAN_DATA_RX_LED_INDICATOR_PIN, VAN_LINE_LEVEL_HIGH, VAN_NETWORK_TYPE_BODY);
 }
 
 void loop()
 {
-    if (millis() - lastMillis > 10)
+    if (millis() - lastMillis > 5)
     {
         lastMillis = millis();
         VAN_RX.Receive(&vanMessageLength, vanMessage);

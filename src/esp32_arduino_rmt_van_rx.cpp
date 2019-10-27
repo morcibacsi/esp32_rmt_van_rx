@@ -21,12 +21,12 @@ void ESP32_RMT_VAN_RX::Receive(uint8_t *messageLength, uint8_t message[])
     rmt_van_rx_receive(messageLength, message);
 }
 
-void ESP32_RMT_VAN_RX::Init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, VAN_LINE_LEVEL vanLineLevel)
+void ESP32_RMT_VAN_RX::Init(uint8_t channel, uint8_t rxPin, uint8_t ledPin, VAN_LINE_LEVEL vanLineLevel, VAN_NETWORK_TYPE vanNetworkType)
 {
     _rxPin = rxPin;
     _ledPin = ledPin;
     _channel = channel;
-    rmt_van_rx_channel_init(channel, rxPin, ledPin, static_cast<RX_VAN_LINE_LEVEL>(vanLineLevel));
+    rmt_van_rx_channel_init(channel, rxPin, ledPin, static_cast<RX_VAN_LINE_LEVEL>(vanLineLevel), static_cast<RX_VAN_NETWORK_TYPE>(vanNetworkType));
 }
 
 void ESP32_RMT_VAN_RX::Stop(uint8_t channel)
