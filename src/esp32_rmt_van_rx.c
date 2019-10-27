@@ -213,11 +213,12 @@ bool rmt_van_rx_is_crc_ok(uint8_t vanMessage[], uint8_t vanMessageLength)
     uint16_t crcValueInMessage = crcByte1 << 8 | crcByte2;
 
     uint8_t vanMessageWithIdWithoutCrc[32];
-    memcpy(vanMessageWithIdWithoutCrc, vanMessage + 1, vanMessageLength - 3);
-
-    uint16_t calculatedCrc = rmt_van_rx_crc15(vanMessageWithIdWithoutCrc, vanMessageLength - 3);
-
-    return crcValueInMessage == calculatedCrc;
+    if(vanMessageLength - 3 <= 32){
+        memcpy(vanMessageWithIdWithoutCrc, vanMessage + 1, vanMessageLength - 3);
+        uint16_t calculatedCrc = rmt_van_rx_crc15(vanMessageWithIdWithoutCrc, vanMessageLength - 3);
+        return crcValueInMessage == calculatedCrc;
+    }
+    return false;
 }
 
 /* Initialize RMT receive channel */
