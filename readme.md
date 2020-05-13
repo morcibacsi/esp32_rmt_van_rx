@@ -10,7 +10,7 @@ This library is built around the [RMT (Remote control) peripheral][rmt_periphera
 
 ### Schematics
 
-![schema](https://github.com/morcibacsi/esp32_rmt_van_rx/raw/master/schema/esp32-sn65hvd230-iso-a.png)
+![schema](https://github.com/morcibacsi/esp32_rmt_van_rx/raw/master/extras/schema/esp32-sn65hvd230-iso-a.png)
 
 ### Arduino
 Copy the following files to your **documents\Arduino\libraries\esp32_arduino_rmt_van_rx** folder
