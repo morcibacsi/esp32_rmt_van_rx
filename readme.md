@@ -42,9 +42,9 @@ VAN_RX->ReceiveData(&vanMessageLength, vanMessage);
 ```
 
 ## See also
-[VAN Analyzer for Saleae Logic Analyzer][van_analyzer]
-[TSS463/461 library for reading and also safely writing the VAN bus][tss_46x library]
-[VAN bus reader for STM32F103 (Blue Pill)][stm32_van_bus]
+- [VAN Analyzer for Saleae Logic Analyzer][van_analyzer]
+- [TSS463/461 library for reading and also safely writing the VAN bus][tss_46x library]
+- [VAN bus reader for STM32F103 (Blue Pill)][stm32_van_bus]
 
 [van_network]: https://en.wikipedia.org/wiki/Vehicle_Area_Network
 [van_analyzer]: https://github.com/morcibacsi/VanAnalyzer/
