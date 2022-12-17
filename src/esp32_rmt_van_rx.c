@@ -174,16 +174,29 @@ uint16_t rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
 /* Returns true if the supplied VAN message has a good CRC value at the last two bytes */
 bool rmt_van_rx_is_crc_ok(uint8_t vanMessage[], uint8_t vanMessageLength)
 {
+    // The VAN message must contain the SOF, IDEN bytes and the CRC bytes
+    if (vanMessageLength < 4)
+    {
+        return false;
+    }
+
+    // Extract the CRC value from the message
     uint8_t crcByte1 = vanMessage[vanMessageLength - 2];
     uint8_t crcByte2 = vanMessage[vanMessageLength - 1];
     uint16_t crcValueInMessage = crcByte1 << 8 | crcByte2;
 
+    // Create a new array containing the message without the SOF and CRC bytes
     uint8_t vanMessageWithIdWithoutCrc[32];
     if(vanMessageLength - 3 <= 32){
         memcpy(vanMessageWithIdWithoutCrc, vanMessage + 1, vanMessageLength - 3);
+
+        // Calculate the CRC of the message with the ID but without the CRC bytes
         uint16_t calculatedCrc = rmt_van_rx_crc15(vanMessageWithIdWithoutCrc, vanMessageLength - 3);
+
+        // Return true if the calculated CRC matches the CRC in the message
         return crcValueInMessage == calculatedCrc;
     }
+
     return false;
 }
 
