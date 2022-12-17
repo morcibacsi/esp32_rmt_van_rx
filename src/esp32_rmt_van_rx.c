@@ -141,69 +141,34 @@ void rmt_van_rx_receive(uint8_t *vanMessageLength, uint8_t vanMessage[])
 */
 uint16_t rmt_van_rx_crc15(uint8_t data[], uint8_t lengthOfData)
 {
-    // computes crc value
-    uint8_t i = 0;
-    uint8_t j = 0;
-    uint8_t k = 0;
-    uint8_t bit = 0;
-
     const uint8_t order = 15;
-    uint8_t polynom[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x9D }; //0xF9D;
-    uint8_t xor[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF };     //0x7FFF;
-    uint8_t mask[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF };    //0x7FFF;
+    const uint16_t polynom = 0xF9D;
+    const uint16_t xorValue = 0x7FFF;
+    const uint16_t mask = 0x7FFF;
 
-    uint16_t crc[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0x00 };
+    uint16_t crc = 0x7FFF;
 
-    // main loop, algorithm is fast bit by bit type
-    for (i = 0; i < lengthOfData; i++)
+    for (uint8_t i = 0; i < lengthOfData; i++)
     {
         uint8_t currentByte = data[i];
 
         // rotate one data byte including crcmask
-        for (j = 0; j < 8; j++)
+        for (uint8_t j = 0; j < 8; j++)
         {
-            bit = 0;
-            if ((crc[7 - ((order - 1) >> 3)] & (1 << ((order - 1) & 7)))>0)
+            bool bit = (crc & (1 << (order - 1))) != 0;
+            if ((currentByte & 0x80) != 0)
             {
-                bit = 1;
-            }
-            if ((currentByte & 0x80) > 0)
-            {
-                bit ^= 1;
+                bit = !bit;
             }
             currentByte <<= 1;
-            for (k = 0; k < 8; k++)     // rotate all (max.8) crc bytes
-            {
-                crc[k] = ((crc[k] << 1) | (crc[k + 1] >> 7)) & mask[k];
-                if (bit > 0)
-                {
-                    crc[k] ^= polynom[k];
-                }
-            }
+
+            crc = ((crc << 1) & mask) ^ (bit ? polynom : 0);
+            //crc = ((crc << 1) & mask) ^ (-bit & polynom);
         }
     }
 
-    uint16_t finalCrc = 0;
-
-    // perform xor value
-    for (i = 0; i < 8; i++)
-    {
-        crc[i] ^= xor[i];
-        if (crc[i] != 0)
-        {
-            if (finalCrc == 0)
-            {
-                finalCrc |= crc[i];
-            }
-            else
-            {
-                finalCrc = crc[i] | finalCrc << 8;
-            }
-        }
-    }
-
-    // multiply result by 2 to turn 15 bit result into 16 bit representation
-    return finalCrc << 1;
+    // perform xor and multiply result by 2 to turn 15 bit result into 16 bit representation
+    return (crc ^ xorValue) << 1;
 }
 
 /* Returns true if the supplied VAN message has a good CRC value at the last two bytes */
