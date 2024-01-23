@@ -42,6 +42,7 @@ int32_t Esp32RmtReader::Start()
     rmt_rx.clk_div       = _clkDiv; //80 = 1 MHz, 1 us - we  take samples every 1 microseconds
     rmt_rx.mem_block_num = _memoryBlocks;
     rmt_rx.rmt_mode      = RMT_MODE_RX;
+    rmt_rx.flags         = 0;
 
     rmt_rx.rx_config.filter_en           = false;
     rmt_rx.rx_config.filter_ticks_thresh = 0;
