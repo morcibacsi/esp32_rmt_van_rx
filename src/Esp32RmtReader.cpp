@@ -1,5 +1,6 @@
 #include "Esp32RmtReader.h"
 #include <string.h>
+#include <rom/gpio.h>
 
 Esp32RmtReader::Esp32RmtReader(uint8_t clkDiv, uint16_t idleTreshold, uint8_t channel, uint8_t rxPin, int8_t ledPin)
 {
